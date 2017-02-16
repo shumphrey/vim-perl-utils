@@ -4,7 +4,7 @@
 " MAPPINGS
 if !exists('g:no_perl_maps')
     nnoremap <buffer> <silent> cpp :<C-U>exe perl#change_package_from_filename()<CR>
-    nnoremap <buffer> <silent> cpf :<C-U>exec perl#change_filename_from_package()<CR>
+    nnoremap <buffer> <silent> cpf :<C-U>exe perl#change_filename_from_package()<CR>
 endif
 
 
@@ -16,34 +16,35 @@ let g:perl_utils = 1
 " utilities
 
 function! s:debug(str) abort
-    echohl Error
-    echo a:str
-    echohl None
+    echohl Error | echo a:str | echohl None
 endfunction
 
-function! s:get_lib_dir() abort
+function! s:get_lib_dir(file) abort
     " We already know the project dir
     if exists('b:project_lib_dir')
         return b:project_lib_dir
     endif
+
+    " Guess from file, find first occurrence of /lib/ or lib/ (word boundary)
+    let idx = matchend(a:file, "[\</]lib/")
+    if idx > -1
+        return strpart(a:file, 0, idx)
+    endif
+
     " We're in a git work tree set by fugitive
     if exists('b:git_dir')
-        let dir = substitute(b:git_dir, '.git', 'lib', '')
+        return substitute(b:git_dir, '.git', 'lib', '')
     endif
 
     " TODO: calculate based on PERL5LIB?
-
-    if isdirectory(dir)
-        let b:project_lib_dir = dir
-        return dir
-    endif
 
     return ''
 endfunction
 
 function! perl#get_package_from_file() abort
-    let lib_dir = s:get_lib_dir()
-    if match(expand('%:p'), lib_dir) < 0
+    let file = expand('%:p')
+    let lib_dir = s:get_lib_dir(file)
+    if match(file, lib_dir) < 0
         return ''
     endif
 
@@ -69,13 +70,13 @@ endfunction
 function! perl#change_package_from_filename() abort
     let package = perl#get_package_from_file()
     if strlen(package) < 1
-        echom "Cannot find appropriate package line"
+        echohl Error | echo "Could not work out package from file name" | echohl None
         return
     endif
 
     let current_package = perl#get_package_from_buffer()
     if strlen(current_package) < 1
-        echohl Error | echo "Could not work out package from file name" | echohl None
+        echohl Error | echo "Cannot find appropriate package line" | echohl None
         return
     endif
 
