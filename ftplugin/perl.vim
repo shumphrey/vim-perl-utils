@@ -5,6 +5,7 @@
 if !exists('g:no_perl_maps')
     nnoremap <buffer> <silent> cpp :<C-U>exe perl#change_package_from_filename()<CR>
     nnoremap <buffer> <silent> cpf :<C-U>exe perl#change_filename_from_package()<CR>
+    nnoremap <buffer> <silent> gmc :<C-U>exe perl#open_in_metacpan('')<CR>
 endif
 
 
@@ -93,4 +94,30 @@ endfunction
 " Move the file based on package name
 function! perl#change_filename_from_package() abort
     throw "file from package"
+endfunction
+
+" Open module/word under cursor in metacpan.org
+command! -bang Metacpan :exe perl#open_in_metacpan(<bang>0)
+function! perl#open_in_metacpan(bang) abort
+    " TODO: url might need some escaping
+    let url = 'https://metacpan.org/pod/' . expand('<cword>')
+
+    if a:bang
+        if has('clipboard')
+            let @+ = url
+        endif
+        echomsg url
+    elseif exists(':Browse') == 2
+        echomsg url|Browse url
+    else
+        if !exists('g:loaded_netrw')
+            runtime! autoload/netrw.vim
+        endif
+        if exists('*netrw#BrowseX')
+            echomsg url|call netrw#BrowseX(url, 0)
+        else
+            echomsg url|call netrw#NetrwBrowseX(url, 0)
+        endif
+    endif
+    return
 endfunction
