@@ -59,7 +59,7 @@ function! perl#get_package_from_buffer() abort
         let line = getline(lnum)
         if line =~ "package\\s\\+[a-zA-Z0-9]"
             let package = substitute(line, '.*package ', '', '')
-            return substitute(package, "[^a-zA-Z0-9:]\\+", '', 'g')
+            return substitute(package, "[^a-zA-Z0-9:_]\\+", '', 'g')
         endif
         let lnum = lnum + 1
     endwhile
