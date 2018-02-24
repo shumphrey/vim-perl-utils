@@ -119,5 +119,5 @@ function! perl#open_in_metacpan(bang) abort
             echomsg url|call netrw#NetrwBrowseX(url, 0)
         endif
     endif
-    return
+    return 1
 endfunction
