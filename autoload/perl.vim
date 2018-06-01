@@ -15,6 +15,14 @@ function! s:get_lib_dir(file) abort
         return b:project_lib_dir
     endif
 
+    " loop through the perl5lib to see if this matches a path
+    let paths = split($PERL5LIB, ':')
+    for path in paths
+        if match(a:file, '^' . path) > -1
+            return path
+        endif
+    endfor
+
     " Guess from file, find first occurrence of /lib/ or lib/ (word boundary)
     let idx = matchend(a:file, "[\</]lib/")
     if idx > -1
@@ -25,8 +33,6 @@ function! s:get_lib_dir(file) abort
     if exists('b:git_dir')
         return substitute(b:git_dir, '.git', 'lib', '')
     endif
-
-    " TODO: calculate based on PERL5LIB?
 
     return ''
 endfunction
