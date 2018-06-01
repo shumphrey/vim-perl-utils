@@ -1,10 +1,5 @@
 " Author: Steven Humphrey <https://github.com/shumphrey/>
 
-if exists('g:perl_utils')
-    finish
-endif
-let g:perl_utils = 1
-
 " MAPPINGS
 if !exists('g:no_perl_maps')
     nnoremap <buffer> <silent> cpp :<C-U>exe perl#change_package_from_filename()<CR>
